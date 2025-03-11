@@ -1,59 +1,67 @@
-import { useEffect, useState } from "react"
-import { languageOptions } from "../_constants/languageOptions"
-import useKeyPress from "../hooks/useKeyPress"
-import { toast, ToastContainer } from "react-toastify"
-import CustomInput from "./CustomInput"
-import ThemeDropdown from "./ThemeDropdown"
-import CodeEditorWindow from "./CodeEditorWindow"
-import LanguageDropdown from "./LanguageDropdown"
-import OutputWindow from "./OutputWindow"
-import { classnames } from "../utils/general"
-import { defineTheme } from "../lib/defineTheme"
-// import { headers } from "next/headers"
-import axios from "axios"
-import OutputDetails from "./OutputDetails"
+import { useEffect, useState } from 'react'
+import { languageOptions } from '../_constants/languageOptions'
+import useKeyPress from '../hooks/useKeyPress'
+import { toast, ToastContainer } from 'react-toastify'
+import CustomInput from './CustomInput'
+import ThemeDropdown from './ThemeDropdown'
+import CodeEditorWindow from './CodeEditorWindow'
+import LanguageDropdown from './LanguageDropdown'
+import OutputWindow from './OutputWindow'
+import { classnames } from '../utils/general'
+import { defineTheme } from '../lib/defineTheme'
+import axios from 'axios'
+import OutputDetails from './OutputDetails'
+
+import {
+   ResizableHandle,
+   ResizablePanel,
+   ResizablePanelGroup,
+} from "@/components/ui/resizable"
+
 
 const javascriptDefault = `// This is javascript hello`
 const Landing = () => {
    const [code, setCode] = useState(javascriptDefault)
-   const [customInput, setCustomInput] = useState("")
+   const [solutionCode, setSolutionCode] = useState("//Default Solution code")
+   const [customInput, setCustomInput] = useState('')
    const [outputDetails, setOutputDetails] = useState(null)
    const [processing, setProcessing] = useState(null)
-   const [theme, setTheme] = useState("cobalt")
+   const [theme, setTheme] = useState('cobalt')
    const [language, setLanguage] = useState(languageOptions[0])
+   const [showSolution, setShowSolution] = useState(false)
 
-   const enterPress = useKeyPress("Enter");
-   const ctrlPress = useKeyPress("Control");
+   const enterPress = useKeyPress('Enter')
+   const ctrlPress = useKeyPress('Control')
 
-   const onSelectChange = (sl) => {
-      console.log("Selected option", sl)
+
+   const onSelectChange = sl => {
+      console.log('Selected option', sl)
       setLanguage(sl)
    }
 
    useEffect(() => {
       if (enterPress && ctrlPress) {
-         console.log("enterPress", enterPress)
-         console.log("ctrlPress", ctrlPress)
+         console.log('enterPress', enterPress)
+         console.log('ctrlPress', ctrlPress)
 
-         handleCompile();
+         handleCompile()
       }
    }, [enterPress, ctrlPress])
 
    const onChange = (action, data) => {
       switch (action) {
-         case "code": {
+         case 'code': {
             setCode(data)
-            break;
+            break
          }
          default: {
-            console.warn("case not handled!", action, data);
+            console.warn('case not handled!', action, data)
          }
       }
    }
 
    const handleCompile = () => {
-
-      setProcessing(true);
+      setProcessing(true)
 
       const formData = {
          language_id: language.id,
@@ -63,13 +71,13 @@ const Landing = () => {
       }
 
       const options = {
-         method: "POST",
+         method: 'POST',
          url: process.env.NEXT_PUBLIC_RAPID_API_URL,
-         params: { base64_encoded: "true", fields: "*", wait: 'false' },
+         params: { base64_encoded: 'true', fields: '*', wait: 'false' },
          headers: {
-            "Content-Type": "application/json",
-            "x-rapidapi-host": process.env.NEXT_PUBLIC_RAPID_API_HOST,
-            "x-rapidapi-key": process.env.NEXT_PUBLIC_RAPID_API_KEY,
+            'Content-Type': 'application/json',
+            'x-rapidapi-host': process.env.NEXT_PUBLIC_RAPID_API_HOST,
+            'x-rapidapi-key': process.env.NEXT_PUBLIC_RAPID_API_KEY
          },
          data: formData
       }
@@ -77,24 +85,22 @@ const Landing = () => {
       axios
          .request(options)
          .then(function (response) {
-            console.log("res.data", response.data);
-            const token = response.data.token;
+            console.log('res.data', response.data)
+            const token = response.data.token
             checkStatus(token)
          })
-         .catch((err) => {
-            let error = err.response ? err.response.data : err;
-            setProcessing(false);
+         .catch(err => {
+            let error = err.response ? err.response.data : err
+            setProcessing(false)
             console.log(error)
          })
-
    }
 
-   const checkStatus = async (token) => {
-
+   const checkStatus = async token => {
       const options = {
-         method: "GET",
-         url: process.env.NEXT_PUBLIC_RAPID_API_URL + "/" + token,
-         params: { base64_encoded: "true", fields: "*" },
+         method: 'GET',
+         url: process.env.NEXT_PUBLIC_RAPID_API_URL + '/' + token,
+         params: { base64_encoded: 'true', fields: '*' },
          headers: {
             'x-rapidapi-key': process.env.NEXT_PUBLIC_RAPID_API_KEY,
             'x-rapidapi-host': process.env.NEXT_PUBLIC_RAPID_API_HOST
@@ -102,75 +108,72 @@ const Landing = () => {
       }
 
       try {
-         let response = await axios.request(options);
-         let statusId = response.data.status?.id;
+         let response = await axios.request(options)
+         let statusId = response.data.status?.id
 
          if (statusId === 1 || statusId === 2) {
             setTimeout(() => {
                checkStatus(token)
             }, 2000)
             return
-         }else{
+         } else {
             setProcessing(false)
             setOutputDetails(response.data)
             showSuccessToast(`Compiled Successfully`)
             console.log('response.data', response.data)
             return
          }
-      }
-      catch (err){
-         console.log("err", err);
+      } catch (err) {
+         console.log('err', err)
          setProcessing(false)
-         showErrorToast();
+         showErrorToast()
       }
    }
 
-   const handleThemeChange = (th) => {
+   const handleThemeChange = th => {
+      const theme = th
+      console.log('theme...', theme)
 
-      const theme = th;
-      console.log("theme...", theme);
-
-      if (["light", "vs-dark"].includes(theme.value)) {
+      if (['light', 'vs-dark'].includes(theme.value)) {
          setTheme(theme)
       } else {
-         defineTheme(theme.value).then((_) => setTheme(theme))
+         defineTheme(theme.value).then(_ => setTheme(theme))
       }
    }
 
    useEffect(() => {
-      defineTheme("oceanic-next").then((_) =>
-         setTheme({ value: "oceanic-next", label: "Oceanic Next" })
-      );
-   }, []);
+      defineTheme('oceanic-next').then(_ =>
+         setTheme({ value: 'oceanic-next', label: 'Oceanic Next' })
+      )
+   }, [])
 
-   const showSuccessToast = (msg) => {
+   const showSuccessToast = msg => {
       toast.success(msg || `Compiled Successfully!`, {
-         position: "top-right",
+         position: 'top-right',
          autoClose: 1000,
          hideProgressBar: false,
          closeOnClick: true,
          pauseOnHover: true,
          draggable: true,
-         progress: undefined,
-      });
-   };
-   const showErrorToast = (msg) => {
+         progress: undefined
+      })
+   }
+   const showErrorToast = msg => {
       toast.error(msg || `Something went wrong! Please try again.`, {
-         position: "top-right",
+         position: 'top-right',
          autoClose: 1000,
          hideProgressBar: false,
          closeOnClick: true,
          pauseOnHover: true,
          draggable: true,
-         progress: undefined,
-      });
-   };
-
+         progress: undefined
+      })
+   }
 
    return (
-      <>
+      <div className='h-[100vh]'>
          <ToastContainer
-            position="top-right"
+            position='top-right'
             autoClose={2000}
             hideProgressBar={false}
             newestOnTop={false}
@@ -180,50 +183,157 @@ const Landing = () => {
             draggable
             pauseOnHover
          />
-
-         <div className="w-full h-4 bg-gradient-to-r from-pink-500 via-red-500 to-yellow-500"></div>
-         <div className="flex flex-row">
-            <div className="px-4 py-2">
+         <div className='flex flex-row border'>
+            <div className='px-4 py-2'>
                <LanguageDropdown onSelectChange={onSelectChange} />
             </div>
-            <div className="px-4 py-2">
+            <div className='px-4 py-2'>
                <ThemeDropdown handleThemeChange={handleThemeChange} theme={theme} />
             </div>
          </div>
-         <div className="flex flex-row items-start px-4 py-4 space-x-4">
-            <div className="flex flex-col items-end justify-start w-full h-full">
-               <CodeEditorWindow
-                  code={code}
-                  onChange={onChange}
-                  language={language.value}
-                  theme={theme.value}
-               />
-            </div>
-
-            <div className="right-container flex flex-shrink-0 w-[30%] flex-col">
-               <OutputWindow outputDetails={outputDetails} />
-               <div className="flex flex-col items-end">
-                  {/* <CustomInput
-                     customInput={customInput}
-                     setCustomInput={setCustomInput}
-                  /> */}
-                  <button
-                     onClick={handleCompile}
-                     disabled={!code}
-                     className={classnames(
-                        "mt-4 border-2 border-black z-10 rounded-md shadow-[5px_5px_0px_0px_rgba(0,0,0)] px-4 py-2 hover:shadow transition duration-200 flex-shrink-0",
-                        !code ? "opacity-50" : ""
-                     )}
-                  >
-                     {processing ? "Processing..." : "Compile and Execute"}
-                  </button>
+         <ResizablePanelGroup
+            direction="horizontal"
+         >
+            <ResizablePanel>
+               <div className='h-full px-1 bg-gray-500 '>
+                  Hello this is mdx
                </div>
-               {outputDetails && <OutputDetails outputDetails={outputDetails} />}
+            </ResizablePanel>
+            <ResizableHandle />
+            <ResizablePanel>
+               <ResizablePanelGroup direction="vertical">
+                  <ResizablePanel >
+                     <div className='flex h-full border border-y-0'>
+                        <div className={`${showSolution ? 'w-[50%]' : 'w-[100%]'}`}>
+                           <CodeEditorWindow
+                              code={code}
+                              onChange={onChange}
+                              language={language.value}
+                              theme={theme.value}
+                           />
+                        </div>
+                        {
+                           showSolution && <div className='w-[50%] border border-y-0'>
+                              <CodeEditorWindow
+                                 code={solutionCode}
+                                 onChange={onChange}
+                                 language={language.value}
+                                 theme={theme.value}
+                              />
+                           </div>
+                        }
+                     </div>
+                  </ResizablePanel>
+                  <ResizableHandle />
+                  <ResizablePanel >
+                     <div className='h-full border '>
+                        <div className='flex items-center h-12 gap-2 pl-2 text-sm font-bold border'>
+                           <button title='submit' className='z-10 px-4 py-1 text-black bg-yellow-300 border-2 border-black rounded-full hover:shadow'>
+                              Submit
+                           </button>
+                           <button
+                              title='ctrl + enter'
+                              onClick={handleCompile}
+                              disabled={!code}
+                              className={classnames(
+                                 ' bg-gray-100 border-2 border-black text-black z-10 rounded-full px-4 py-1 hover:shadow',
+                                 !code ? 'opacity-50' : ''
+                              )}
+                           >
+                              {processing ? 'Processing...' : 'Run'}
+                           </button>
+                           <button title='solution' onClick={() => setShowSolution(!showSolution)} className={`z-10 px-4 py-1 text-black ${showSolution ? "bg-yellow-300" : "bg-white"} border-2 border-black rounded-full hover:shadow`}>
+                              Solution
+                           </button>
+                        </div>
+                        <div className='w-full h-[89%]'>
+                           <OutputWindow outputDetail
+                              s={outputDetails} />
+                        </div>
+                     </div>
+                  </ResizablePanel>
+               </ResizablePanelGroup>
+            </ResizablePanel>
+         </ResizablePanelGroup>
+
+         {/* <div className=' h-[100vh]'>
+            <ToastContainer
+               position='top-right'
+               autoClose={2000}
+               hideProgressBar={false}
+               newestOnTop={false}
+               closeOnClick
+               rtl={false}
+               pauseOnFocusLoss
+               draggable
+               pauseOnHover
+            />
+
+            <div className='flex flex-row border'>
+               <div className='px-4 py-2'>
+                  <LanguageDropdown onSelectChange={onSelectChange} />
+               </div>
+               <div className='px-4 py-2'>
+                  <ThemeDropdown handleThemeChange={handleThemeChange} theme={theme} />
+               </div>
             </div>
-         </div>
-      </>
+            <div className='flex flex-row w-full h-[90%]'>
+               <div className='w-6/12 bg-gray-500 border border-t-0 border-r-0'>
+                  Hello this is mdx
+               </div>
+
+               <div className='flex flex-col w-6/12'>
+                  <div className='h-[50%] border border-y-0 flex'>
+                     <div className={`${showSolution ? 'w-[50%]' : 'w-[100%]'}`}>
+                        <CodeEditorWindow
+                           code={code}
+                           onChange={onChange}
+                           language={language.value}
+                           theme={theme.value}
+                        />
+                     </div>
+                     {
+                        showSolution && <div className='w-[50%] border border-y-0'>
+                           <CodeEditorWindow
+                              code={solutionCode}
+                              onChange={onChange}
+                              language={language.value}
+                              theme={theme.value}
+                           />
+                        </div>
+                     }
+                  </div>
+
+                  <div className='h-[50%] border'>
+                     <div className='flex items-center h-12 gap-2 pl-2 text-sm font-bold border'>
+                        <button title='submit' className='z-10 px-4 py-1 text-black bg-yellow-300 border-2 border-black rounded-full hover:shadow'>
+                           Submit
+                        </button>
+                        <button
+                           title='ctrl + enter'
+                           onClick={handleCompile}
+                           disabled={!code}
+                           className={classnames(
+                              ' bg-gray-100 border-2 border-black text-black z-10 rounded-full px-4 py-1 hover:shadow',
+                              !code ? 'opacity-50' : ''
+                           )}
+                        >
+                           {processing ? 'Processing...' : 'Run'}
+                        </button>
+                        <button title='solution' onClick={() => setShowSolution(!showSolution)} className={`z-10 px-4 py-1 text-black ${showSolution ? "bg-yellow-300" : "bg-white"} border-2 border-black rounded-full hover:shadow`}>
+                           Solution
+                        </button>
+                     </div>
+                     <div className='w-full h-[89%]'>
+                        <OutputWindow outputDetail
+                           s={outputDetails} />
+                     </div>
+                  </div>
+               </div>
+            </div>
+         </div> */}
+      </div>
    )
 }
-
 
 export default Landing
