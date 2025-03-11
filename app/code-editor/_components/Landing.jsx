@@ -171,7 +171,7 @@ const Landing = () => {
    }
 
    return (
-      <div className='h-[100vh]'>
+      <div className='h-[93vh]'>
          <ToastContainer
             position='top-right'
             autoClose={2000}
@@ -246,7 +246,7 @@ const Landing = () => {
                               Solution
                            </button>
                         </div>
-                        <div className='w-full h-[89%]'>
+                        <div className='w-full h-full'>
                            <OutputWindow outputDetail
                               s={outputDetails} />
                         </div>
@@ -255,83 +255,6 @@ const Landing = () => {
                </ResizablePanelGroup>
             </ResizablePanel>
          </ResizablePanelGroup>
-
-         {/* <div className=' h-[100vh]'>
-            <ToastContainer
-               position='top-right'
-               autoClose={2000}
-               hideProgressBar={false}
-               newestOnTop={false}
-               closeOnClick
-               rtl={false}
-               pauseOnFocusLoss
-               draggable
-               pauseOnHover
-            />
-
-            <div className='flex flex-row border'>
-               <div className='px-4 py-2'>
-                  <LanguageDropdown onSelectChange={onSelectChange} />
-               </div>
-               <div className='px-4 py-2'>
-                  <ThemeDropdown handleThemeChange={handleThemeChange} theme={theme} />
-               </div>
-            </div>
-            <div className='flex flex-row w-full h-[90%]'>
-               <div className='w-6/12 bg-gray-500 border border-t-0 border-r-0'>
-                  Hello this is mdx
-               </div>
-
-               <div className='flex flex-col w-6/12'>
-                  <div className='h-[50%] border border-y-0 flex'>
-                     <div className={`${showSolution ? 'w-[50%]' : 'w-[100%]'}`}>
-                        <CodeEditorWindow
-                           code={code}
-                           onChange={onChange}
-                           language={language.value}
-                           theme={theme.value}
-                        />
-                     </div>
-                     {
-                        showSolution && <div className='w-[50%] border border-y-0'>
-                           <CodeEditorWindow
-                              code={solutionCode}
-                              onChange={onChange}
-                              language={language.value}
-                              theme={theme.value}
-                           />
-                        </div>
-                     }
-                  </div>
-
-                  <div className='h-[50%] border'>
-                     <div className='flex items-center h-12 gap-2 pl-2 text-sm font-bold border'>
-                        <button title='submit' className='z-10 px-4 py-1 text-black bg-yellow-300 border-2 border-black rounded-full hover:shadow'>
-                           Submit
-                        </button>
-                        <button
-                           title='ctrl + enter'
-                           onClick={handleCompile}
-                           disabled={!code}
-                           className={classnames(
-                              ' bg-gray-100 border-2 border-black text-black z-10 rounded-full px-4 py-1 hover:shadow',
-                              !code ? 'opacity-50' : ''
-                           )}
-                        >
-                           {processing ? 'Processing...' : 'Run'}
-                        </button>
-                        <button title='solution' onClick={() => setShowSolution(!showSolution)} className={`z-10 px-4 py-1 text-black ${showSolution ? "bg-yellow-300" : "bg-white"} border-2 border-black rounded-full hover:shadow`}>
-                           Solution
-                        </button>
-                     </div>
-                     <div className='w-full h-[89%]'>
-                        <OutputWindow outputDetail
-                           s={outputDetails} />
-                     </div>
-                  </div>
-               </div>
-            </div>
-         </div> */}
       </div>
    )
 }
