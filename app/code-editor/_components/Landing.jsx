@@ -247,8 +247,7 @@ const Landing = () => {
                            </button>
                         </div>
                         <div className='w-full h-full'>
-                           <OutputWindow outputDetail
-                              s={outputDetails} />
+                           <OutputWindow outputDetails={outputDetails} />
                         </div>
                      </div>
                   </ResizablePanel>
