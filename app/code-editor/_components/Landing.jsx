@@ -1,3 +1,4 @@
+"use client"
 import { useEffect, useState } from 'react'
 import { languageOptions } from '../_constants/languageOptions'
 import useKeyPress from '../hooks/useKeyPress'
@@ -15,24 +16,37 @@ import OutputDetails from './OutputDetails'
 import {
    ResizableHandle,
    ResizablePanel,
-   ResizablePanelGroup,
-} from "@/components/ui/resizable"
+   ResizablePanelGroup
+} from '@/components/ui/resizable'
 
+import MdxProvider from './MdxRenderer'
 
 const javascriptDefault = `// This is javascript hello`
-const Landing = () => {
+
+
+const Landing = ({ mdxContent }) => {
    const [code, setCode] = useState(javascriptDefault)
-   const [solutionCode, setSolutionCode] = useState("//Default Solution code")
+   const [solutionCode, setSolutionCode] = useState('//Default Solution code')
    const [customInput, setCustomInput] = useState('')
    const [outputDetails, setOutputDetails] = useState(null)
    const [processing, setProcessing] = useState(null)
    const [theme, setTheme] = useState('cobalt')
    const [language, setLanguage] = useState(languageOptions[0])
    const [showSolution, setShowSolution] = useState(false)
+   const [content, setContent] = useState(
+      `
+# Hello world!
+
+This is the content of an MDX file.
+
+- Yes
+- it
+- is
+  `
+   )
 
    const enterPress = useKeyPress('Enter')
    const ctrlPress = useKeyPress('Control')
-
 
    const onSelectChange = sl => {
       console.log('Selected option', sl)
@@ -191,18 +205,16 @@ const Landing = () => {
                <ThemeDropdown handleThemeChange={handleThemeChange} theme={theme} />
             </div>
          </div>
-         <ResizablePanelGroup
-            direction="horizontal"
-         >
+         <ResizablePanelGroup direction='horizontal'>
             <ResizablePanel>
                <div className='h-full px-1 bg-gray-500 '>
-                  Hello this is mdx
+                  {mdxContent}
                </div>
             </ResizablePanel>
             <ResizableHandle />
             <ResizablePanel>
-               <ResizablePanelGroup direction="vertical">
-                  <ResizablePanel >
+               <ResizablePanelGroup direction='vertical'>
+                  <ResizablePanel>
                      <div className='flex h-full border border-y-0'>
                         <div className={`${showSolution ? 'w-[50%]' : 'w-[100%]'}`}>
                            <CodeEditorWindow
@@ -212,8 +224,8 @@ const Landing = () => {
                               theme={theme.value}
                            />
                         </div>
-                        {
-                           showSolution && <div className='w-[50%] border border-y-0'>
+                        {showSolution && (
+                           <div className='w-[50%] border border-y-0'>
                               <CodeEditorWindow
                                  code={solutionCode}
                                  onChange={onChange}
@@ -221,14 +233,17 @@ const Landing = () => {
                                  theme={theme.value}
                               />
                            </div>
-                        }
+                        )}
                      </div>
                   </ResizablePanel>
                   <ResizableHandle />
-                  <ResizablePanel >
+                  <ResizablePanel>
                      <div className='h-full border '>
                         <div className='flex items-center h-12 gap-2 pl-2 text-sm font-bold border'>
-                           <button title='submit' className='z-10 px-4 py-1 text-black bg-yellow-300 border-2 border-black rounded-full hover:shadow'>
+                           <button
+                              title='submit'
+                              className='z-10 px-4 py-1 text-black bg-yellow-300 border-2 border-black rounded-full hover:shadow'
+                           >
                               Submit
                            </button>
                            <button
@@ -242,7 +257,12 @@ const Landing = () => {
                            >
                               {processing ? 'Processing...' : 'Run'}
                            </button>
-                           <button title='solution' onClick={() => setShowSolution(!showSolution)} className={`z-10 px-4 py-1 text-black ${showSolution ? "bg-yellow-300" : "bg-white"} border-2 border-black rounded-full hover:shadow`}>
+                           <button
+                              title='solution'
+                              onClick={() => setShowSolution(!showSolution)}
+                              className={`z-10 px-4 py-1 text-black ${showSolution ? 'bg-yellow-300' : 'bg-white'
+                                 } border-2 border-black rounded-full hover:shadow`}
+                           >
                               Solution
                            </button>
                         </div>
