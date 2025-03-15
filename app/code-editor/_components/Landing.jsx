@@ -33,17 +33,6 @@ const Landing = ({ mdxContent }) => {
    const [theme, setTheme] = useState('cobalt')
    const [language, setLanguage] = useState(languageOptions[0])
    const [showSolution, setShowSolution] = useState(false)
-   const [content, setContent] = useState(
-      `
-# Hello world!
-
-This is the content of an MDX file.
-
-- Yes
-- it
-- is
-  `
-   )
 
    const enterPress = useKeyPress('Enter')
    const ctrlPress = useKeyPress('Control')
@@ -228,7 +217,6 @@ This is the content of an MDX file.
                            <div className='w-[50%] border border-y-0'>
                               <CodeEditorWindow
                                  code={solutionCode}
-                                 onChange={onChange}
                                  language={language.value}
                                  theme={theme.value}
                               />
