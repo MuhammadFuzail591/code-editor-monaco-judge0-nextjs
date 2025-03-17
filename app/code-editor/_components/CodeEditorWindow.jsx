@@ -14,7 +14,6 @@ function CodeEditorWindow({ onChange, language, code, theme }) {
     <Editor
       language={language || "javascript"}
       value={value}
-      theme={theme}
       defaultValue='// some comment'
       onChange={handleEditorChange}
     />

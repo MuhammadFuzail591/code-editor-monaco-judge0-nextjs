@@ -1,19 +1,18 @@
 import Landing from './_components/Landing'
-import MdxRenderer from './_components/MdxRenderer';
+import MdxRenderer from './_components/MdxRenderer'
+import { loadBlog } from './utils/file-helper'
+import { twoSumProblem } from './utils/problems/two-sum'
 
 async function page () {
-  const mdxContent = `
-  # Wellcome to the Blog
-  This is an example of **Mdx Content**
-  - item 1
-  - item 2
-  `;
+  const { frontmatter, content } = await loadBlog(twoSumProblem.mdxData)
 
-  const renderedMdx = await MdxRenderer({source: mdxContent})
+  // const renderedMdx = await loadBlog(twoSumProblem.mdxData)
+
+  const renderedMdx = MdxRenderer({ source: content })
 
   return (
     <div>
-      <Landing mdxContent={renderedMdx} />
+      <Landing mdxContent={renderedMdx} frontMatter={frontmatter}/>
     </div>
   )
 }

@@ -1,10 +1,18 @@
+import CodeSnippet from '@/components/CodeSnippet'
 import { MDXRemote } from 'next-mdx-remote/rsc'
 import React from 'react'
 
-function MdxRenderer({source}) {
+
+function MdxRenderer({ source }) {
 
    return (
-      <MDXRemote source={source} />
+
+      <MDXRemote
+         source={source}
+         components={{
+            pre: CodeSnippet
+         }}
+      />
    )
 }
 

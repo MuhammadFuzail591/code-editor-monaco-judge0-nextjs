@@ -12,6 +12,13 @@ import { classnames } from '../utils/general'
 import { defineTheme } from '../lib/defineTheme'
 import axios from 'axios'
 import OutputDetails from './OutputDetails'
+import styles from '../css/content.module.css'
+import { RiTimerLine } from "react-icons/ri";
+import { IoMdDoneAll } from "react-icons/io";
+import { ImCross } from "react-icons/im";
+
+
+
 
 import {
    ResizableHandle,
@@ -19,20 +26,22 @@ import {
    ResizablePanelGroup
 } from '@/components/ui/resizable'
 
-import MdxProvider from './MdxRenderer'
+import { twoSumProblem } from '../utils/problems/two-sum'
 
-const javascriptDefault = `// This is javascript hello`
+const encodeBase64 = str => btoa(unescape(encodeURIComponent(str)))
+const decodeBase64 = str => decodeURIComponent(escape(atob(str)))
 
-
-const Landing = ({ mdxContent }) => {
-   const [code, setCode] = useState(javascriptDefault)
-   const [solutionCode, setSolutionCode] = useState('//Default Solution code')
+const Landing = ({ mdxContent, frontMatter }) => {
+   const [code, setCode] = useState(twoSumProblem.defaultCode)
+   const [solutionCode, setSolutionCode] = useState(twoSumProblem.solutionCode)
    const [customInput, setCustomInput] = useState('')
    const [outputDetails, setOutputDetails] = useState(null)
    const [processing, setProcessing] = useState(null)
    const [theme, setTheme] = useState('cobalt')
    const [language, setLanguage] = useState(languageOptions[0])
    const [showSolution, setShowSolution] = useState(false)
+   const [results, setResults] = useState(null)
+   const [activeTestCase, setActiveTestCase] = useState(null)
 
    const enterPress = useKeyPress('Enter')
    const ctrlPress = useKeyPress('Control')
@@ -41,6 +50,7 @@ const Landing = ({ mdxContent }) => {
       console.log('Selected option', sl)
       setLanguage(sl)
    }
+
 
    useEffect(() => {
       if (enterPress && ctrlPress) {
@@ -63,6 +73,83 @@ const Landing = ({ mdxContent }) => {
       }
    }
 
+   const runCode = async () => {
+      setProcessing(true)
+
+      console.log(twoSumProblem.generateTestCode(code))
+      try {
+         const testResults = await runCodeWithTestCases(
+            twoSumProblem.generateTestCode(code),
+            twoSumProblem.language,
+            twoSumProblem.testCases
+         )
+
+         setResults(testResults)
+
+      } catch (error) {
+         console.log('Error Running Code', error)
+         setResults({ error: 'Failed to run code' },)
+      } finally {
+         setProcessing(false)
+      }
+   }
+
+   const runCodeWithTestCases = async (sourceCode, languageId, testCases) => {
+
+      const submissions = []
+
+      for (const [index, testCase] of testCases.entries()) {
+
+         const options = {
+            method: 'POST',
+            url: process.env.NEXT_PUBLIC_RAPID_API_URL,
+            params: { base64_encoded: 'true', fields: '*', wait: 'true' },
+            headers: {
+               'Content-Type': 'application/json',
+               'x-rapidapi-host': process.env.NEXT_PUBLIC_RAPID_API_HOST,
+               'x-rapidapi-key': process.env.NEXT_PUBLIC_RAPID_API_KEY
+            },
+            data: {
+               source_code: encodeBase64(sourceCode),
+               language_id: languageId,
+               stdin: encodeBase64(testCase.input),
+               expected_output: encodeBase64(testCase.expectedOutput)
+            }
+         }
+
+         try {
+            const response = await axios.request(options)
+            setOutputDetails(response.data)
+            submissions.push({
+               testCase: index + 1,
+               input: testCase.input,
+               expectedOutput: testCase.expectedOutput,
+               actualOutput: response.data.stdout ? decodeBase64(response.data.stdout) : '',
+               status: response.data.status,
+               passed: response.data.status.id === 3,
+               details: response.data
+            })
+         } catch (error) {
+            console.log('Error creating submission', error)
+            submissions.push({
+               testCase: index + 1,
+               input: testCase.input,
+               expectedOutput: testCase.expectedOutput,
+               error: 'failed to execute test',
+               passed: false
+            })
+         }
+      }
+
+      const summary = {
+         totalTestCases: testCases.length,
+         passedTestCases: submissions.filter(r => r.passed).length,
+         failedTestCases: submissions.filter(r => !r.passed).length,
+         testCaseResults: submissions
+      }
+
+      return summary
+   }
    const handleCompile = () => {
       setProcessing(true)
 
@@ -144,6 +231,7 @@ const Landing = ({ mdxContent }) => {
       }
    }
 
+   console.log(results)
    useEffect(() => {
       defineTheme('oceanic-next').then(_ =>
          setTheme({ value: 'oceanic-next', label: 'Oceanic Next' })
@@ -172,7 +260,6 @@ const Landing = ({ mdxContent }) => {
          progress: undefined
       })
    }
-
    return (
       <div className='h-[93vh]'>
          <ToastContainer
@@ -196,11 +283,12 @@ const Landing = ({ mdxContent }) => {
          </div>
          <ResizablePanelGroup direction='horizontal'>
             <ResizablePanel>
-               <div className='h-full px-1 bg-gray-500 '>
-                  {mdxContent}
+               <div className='h-full p-6 my-4 overflow-scroll'>
+                  <h1 className='text-3xl font-bold'>{frontMatter.title}</h1>
+                  <section className='markdown'>{mdxContent}</section>
                </div>
             </ResizablePanel>
-            <ResizableHandle />
+            <ResizableHandle withHandle />
             <ResizablePanel>
                <ResizablePanelGroup direction='vertical'>
                   <ResizablePanel>
@@ -224,9 +312,9 @@ const Landing = ({ mdxContent }) => {
                         )}
                      </div>
                   </ResizablePanel>
-                  <ResizableHandle />
+                  <ResizableHandle withHandle />
                   <ResizablePanel>
-                     <div className='h-full border '>
+                     <div className='h-full border'>
                         <div className='flex items-center h-12 gap-2 pl-2 text-sm font-bold border'>
                            <button
                               title='submit'
@@ -236,7 +324,7 @@ const Landing = ({ mdxContent }) => {
                            </button>
                            <button
                               title='ctrl + enter'
-                              onClick={handleCompile}
+                              onClick={runCode}
                               disabled={!code}
                               className={classnames(
                                  ' bg-gray-100 border-2 border-black text-black z-10 rounded-full px-4 py-1 hover:shadow',
@@ -254,14 +342,44 @@ const Landing = ({ mdxContent }) => {
                               Solution
                            </button>
                         </div>
-                        <div className='w-full h-full'>
+                        <div className='w-full border h-[40%] '>
                            <OutputWindow outputDetails={outputDetails} />
+                        </div>
+                        <div>
+
+                           <div className=' h-[50%] flex items-start gap-4 p-4 border'>
+                              {
+                                 results ? results.testCaseResults?.map((res, index) => (
+
+                                    <div key={index} className='bg-slate-400 w-[3/12] rounded-md p-2 flex flex-col items-center justify-between'>
+                                       <button className='font-bold text-center' onClick={() => setActiveTestCase(res)}>Test Case {index + 1}</button>
+                                       {/* <p className='mb-4 text-2xl'>{res.passed ? <IoMdDoneAll className='font-bold text-green-800' /> : <ImCross className='text-red-700' />}</p> */}
+                                    </div>
+
+                                 )) : ''
+                              }
+                           </div>
+                           <div className={`${activeTestCase ? "p-4" : "hidden"}`}>
+                              <ShowTestDetails testCase={activeTestCase} />
+                           </div>
                         </div>
                      </div>
                   </ResizablePanel>
                </ResizablePanelGroup>
             </ResizablePanel>
          </ResizablePanelGroup>
+      </div>
+   )
+}
+
+const ShowTestDetails = ({ testCase }) => {
+   console.log(testCase)
+   return (
+      <div className='flex flex-col gap-2'>
+         <p><span className='font-bold'>Input: </span><span className='px-2 py-1 rounded-md bg-slate-400'> {testCase?.input || 'N/A'}</span></p>
+         <p><span className='font-bold'>Actual Output: </span><span className='px-2 py-1 rounded-md bg-slate-400'> {testCase?.actualOutput || 'N/A'}</span></p>
+         <p><span className='font-bold'>Expected Output: </span><span className='px-2 py-1 rounded-md bg-slate-400'> {testCase?.expectedOutput || 'N/A'}</span></p>
+         
       </div>
    )
 }

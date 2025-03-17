@@ -8,6 +8,9 @@
   }
 }
 
+.markdown > * {
+  all: revert;
+}
 
 
 @layer base {
