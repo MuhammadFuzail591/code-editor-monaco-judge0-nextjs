@@ -10,8 +10,12 @@ const ResizablePanelGroup = ({
   ...props
 }) => (
   <ResizablePrimitive.PanelGroup
+    style={{
+      height: '95%',
+      overflow:'hidden'
+    }}
     className={cn(
-      "flex h-full w-full data-[panel-group-direction=vertical]:flex-col",
+      "flex w-full data-[panel-group-direction=vertical]:flex-col",
       className
     )}
     {...props} />
@@ -32,7 +36,7 @@ const ResizableHandle = ({
     {...props}>
     {withHandle && (
       <div
-        className="z-10 flex h-4 w-3 items-center justify-center rounded-sm border bg-border">
+        className="z-10 flex items-center justify-center w-3 h-4 border rounded-sm bg-border">
         <GripVertical className="h-2.5 w-2.5" />
       </div>
     )}

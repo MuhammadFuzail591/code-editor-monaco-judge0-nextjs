@@ -11,6 +11,10 @@ import OutputWindow from './OutputWindow'
 import { classnames } from '../utils/general'
 import { defineTheme } from '../lib/defineTheme'
 import axios from 'axios'
+import { FaRegLightbulb } from "react-icons/fa";
+import { MdDarkMode } from "react-icons/md";
+
+
 import OutputDetails from './OutputDetails'
 import styles from '../css/content.module.css'
 import { RiTimerLine } from "react-icons/ri";
@@ -37,11 +41,12 @@ const Landing = ({ mdxContent, frontMatter }) => {
    const [customInput, setCustomInput] = useState('')
    const [outputDetails, setOutputDetails] = useState(null)
    const [processing, setProcessing] = useState(null)
-   const [theme, setTheme] = useState('cobalt')
+   const [theme, setTheme] = useState('Night Owl')
    const [language, setLanguage] = useState(languageOptions[0])
    const [showSolution, setShowSolution] = useState(false)
    const [results, setResults] = useState(null)
    const [activeTestCase, setActiveTestCase] = useState(null)
+   const [isDark, setIsDark] = useState(false)
 
    const enterPress = useKeyPress('Enter')
    const ctrlPress = useKeyPress('Control')
@@ -220,18 +225,18 @@ const Landing = ({ mdxContent, frontMatter }) => {
       }
    }
 
-   const handleThemeChange = th => {
-      const theme = th
-      console.log('theme...', theme)
+   // const handleThemeChange = th => {
+   //    const theme = th
+   //    console.log('theme...', theme)
 
-      if (['light', 'vs-dark'].includes(theme.value)) {
-         setTheme(theme)
-      } else {
-         defineTheme(theme.value).then(_ => setTheme(theme))
-      }
-   }
+   //    if (['light', 'vs-dark'].includes(theme.value)) {
+   //       setTheme(theme)
+   //    } else {
+   //       defineTheme(theme.value).then(_ => setTheme(theme))
+   //    }
+   // }
 
-   console.log(results)
+   // console.log(results)
    useEffect(() => {
       defineTheme('oceanic-next').then(_ =>
          setTheme({ value: 'oceanic-next', label: 'Oceanic Next' })
@@ -261,7 +266,7 @@ const Landing = ({ mdxContent, frontMatter }) => {
       })
    }
    return (
-      <div className='h-[93vh]'>
+      <div className={`h-[98%] ${isDark ? 'text-secondary bg-primary' : 'text-primary bg-secondary'}`}>
          <ToastContainer
             position='top-right'
             autoClose={2000}
@@ -273,18 +278,24 @@ const Landing = ({ mdxContent, frontMatter }) => {
             draggable
             pauseOnHover
          />
-         <div className='flex flex-row border'>
+         <div className='flex flex-row items-center justify-end gap-10 border'>
+            <button
+               onClick={() => setIsDark(!isDark)}
+               className={` p-2 rounded-sm ${isDark ? 'bg-primary' : 'bg-secondary'}`}>
+               {isDark ? <FaRegLightbulb /> : <MdDarkMode />}
+            </button>
             <div className='px-4 py-2'>
                <LanguageDropdown onSelectChange={onSelectChange} />
             </div>
-            <div className='px-4 py-2'>
+            {/* <div className='px-4 py-2'>
                <ThemeDropdown handleThemeChange={handleThemeChange} theme={theme} />
-            </div>
+            </div> */}
          </div>
          <ResizablePanelGroup direction='horizontal'>
             <ResizablePanel>
-               <div className='h-full p-6 my-4 overflow-scroll'>
-                  <h1 className='text-3xl font-bold'>{frontMatter.title}</h1>
+               <div className='h-full px-4 overflow-scroll'>
+                  <h1 className={`my-2 text-4xl font-bold ${isDark ? 'text-secondary' : 'text-primary'}`}>Lesson</h1>
+                  <h1 className='text-2xl font-bold'>{frontMatter.title}</h1>
                   <section className='markdown'>{mdxContent}</section>
                </div>
             </ResizablePanel>
@@ -293,21 +304,23 @@ const Landing = ({ mdxContent, frontMatter }) => {
                <ResizablePanelGroup direction='vertical'>
                   <ResizablePanel>
                      <div className='flex h-full border border-y-0'>
-                        <div className={`${showSolution ? 'w-[50%]' : 'w-[100%]'}`}>
+
+                        <div className={`${showSolution ? 'w-[50%]' : 'w-[100%]'} flex flex-col`}>
+                           <h1 className='my-2 ml-8 text-2xl font-bold '>Code Editor</h1>
                            <CodeEditorWindow
                               code={code}
                               onChange={onChange}
                               language={language.value}
-                              theme={theme.value}
+                              theme={isDark ? 'merbivore-soft' : 'eiffel'}
                            />
                         </div>
                         {showSolution && (
-                           <div className='w-[50%] border border-y-0'>
+                           <div className='w-[50%] border border-y-0 flex flex-col'>
+                              <h1 className='my-2 ml-8 text-2xl font-bold '>Solution Code</h1>
                               <CodeEditorWindow
                                  code={solutionCode}
                                  language={language.value}
-                                 theme={theme.value}
-                              />
+                                 theme={isDark ? 'merbivore-soft' : 'eiffel'} />
                            </div>
                         )}
                      </div>
@@ -351,8 +364,8 @@ const Landing = ({ mdxContent, frontMatter }) => {
                               {
                                  results ? results.testCaseResults?.map((res, index) => (
 
-                                    <div key={index} className='bg-slate-400 w-[3/12] rounded-md p-2 flex flex-col items-center justify-between'>
-                                       <button className='font-bold text-center' onClick={() => setActiveTestCase(res)}>Test Case {index + 1}</button>
+                                    <div key={index} className=' w-[3/12] rounded-md  flex flex-col items-center justify-between'>
+                                       <button className={`font-bold text-center px-2 rounded-md py-2 ${isDark ? 'bg-stone-800' : 'bg-slate-400'}`} onClick={() => setActiveTestCase(res)}>Test Case {index + 1}</button>
                                        {/* <p className='mb-4 text-2xl'>{res.passed ? <IoMdDoneAll className='font-bold text-green-800' /> : <ImCross className='text-red-700' />}</p> */}
                                     </div>
 
@@ -360,7 +373,7 @@ const Landing = ({ mdxContent, frontMatter }) => {
                               }
                            </div>
                            <div className={`${activeTestCase ? "p-4" : "hidden"}`}>
-                              <ShowTestDetails testCase={activeTestCase} />
+                              <ShowTestDetails testCase={activeTestCase} isDark={isDark} />
                            </div>
                         </div>
                      </div>
@@ -372,14 +385,15 @@ const Landing = ({ mdxContent, frontMatter }) => {
    )
 }
 
-const ShowTestDetails = ({ testCase }) => {
+const ShowTestDetails = ({ testCase, isDark }) => {
    console.log(testCase)
+   // className={`flex flex-col gap-2 ${isDark ? 'text-secondary bg-primary' : 'text-primary bg-secondary'}`}
    return (
-      <div className='flex flex-col gap-2'>
-         <p><span className='font-bold'>Input: </span><span className='px-2 py-1 rounded-md bg-slate-400'> {testCase?.input || 'N/A'}</span></p>
-         <p><span className='font-bold'>Actual Output: </span><span className='px-2 py-1 rounded-md bg-slate-400'> {testCase?.actualOutput || 'N/A'}</span></p>
-         <p><span className='font-bold'>Expected Output: </span><span className='px-2 py-1 rounded-md bg-slate-400'> {testCase?.expectedOutput || 'N/A'}</span></p>
-         
+      <div className={`flex flex-col gap-2 ${isDark ? 'text-secondary' : 'text-primary bg-secondary'}`}>
+         <p><span className='font-bold'>Input: </span><span className='px-2 py-1 rounded-md'> {testCase?.input || 'N/A'}</span></p>
+         <p><span className='font-bold'>Actual Output: </span><span className='px-2 py-1 rounded-md'> {testCase?.actualOutput || 'N/A'}</span></p>
+         <p><span className='font-bold'>Expected Output: </span><span className='px-2 py-1 rounded-md'> {testCase?.expectedOutput || 'N/A'}</span></p>
+
       </div>
    )
 }

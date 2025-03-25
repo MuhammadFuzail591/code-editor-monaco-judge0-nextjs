@@ -3,6 +3,11 @@ import MdxRenderer from './_components/MdxRenderer'
 import { loadBlog } from './utils/file-helper'
 import { twoSumProblem } from './utils/problems/two-sum'
 
+export const metadata = {
+  title: 'CodeBite Editor',
+  description: "An in browser code editor for coding exercises"
+}
+
 async function page () {
   const { frontmatter, content } = await loadBlog(twoSumProblem.mdxData)
 
@@ -11,7 +16,7 @@ async function page () {
   const renderedMdx = MdxRenderer({ source: content })
 
   return (
-    <div>
+    <div className='h-screen'>
       <Landing mdxContent={renderedMdx} frontMatter={frontmatter}/>
     </div>
   )
